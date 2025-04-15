@@ -19,17 +19,18 @@ void Menu::displayMenu() const
   cout << "8. Tim kiem theo dia chi\n";
   cout << "9. Tim kiem theo ID\n";
   cout << "10. Thong ke theo loai\n";
+  cout << "11. Doc du lieu tu file CSV\n";
+  cout << "12. Ghi du lieu ra file CSV\n";
   cout << "0. Thoat\n";
   cout << "======================\n";
 }
 
 void Menu::run()
 {
-  manager.loadFromCsv();
   while (true)
   {
     displayMenu();
-    auto choice = getValidIntegerInput("Nhap lua chon: ", 0, 10);
+    auto choice = getValidIntegerInput("Nhap lua chon: ", 0, 12);
     if (!choice)
       continue;
     switch (*choice)
@@ -72,6 +73,18 @@ void Menu::run()
     }
     case 10:
       manager.reportByType();
+      break;
+    case 11:
+      if (manager.loadFromCsv())
+        cout << "Doc du lieu thanh cong!\n";
+      else
+        cout << "Doc du lieu that bai!\n";
+      break;
+    case 12:
+      if (manager.saveToCsv())
+        cout << "Ghi du lieu thanh cong!\n";
+      else
+        cout << "Ghi du lieu that bai!\n";
       break;
     }
   }

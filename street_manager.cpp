@@ -55,12 +55,24 @@ void StreetManager::addHousehold()
   }
   heads[headId] = head;
 
-  string status = getValidStringInput("Nhap trang thai dac biet (Ngheo/Can ngheo, de trong neu khong co): ", 20, true);
-  string errorMsg;
-  if (!isValidSpecialStatus(status, errorMsg))
+  SpecialStatus status = SpecialStatus::None;
+  cout << "Nhap trang thai dac biet:\n";
+  cout << "0. Khong co\n1. Can ngheo\n2. Ngheo\n";
+  auto statusChoice = getValidIntegerInput("Nhap lua chon: ", 0, 2);
+  if (statusChoice)
   {
-    cout << "Loi: " << errorMsg << " Trang thai se duoc de trong.\n";
-    status = "";
+    switch (*statusChoice)
+    {
+    case 0:
+      status = SpecialStatus::None;
+      break;
+    case 1:
+      status = SpecialStatus::NearPoor;
+      break;
+    case 2:
+      status = SpecialStatus::Poor;
+      break;
+    }
   }
 
   vector<string> memberIds;
@@ -70,22 +82,19 @@ void StreetManager::addHousehold()
     for (int i = 0; i < *numMembers; ++i)
     {
       string memId;
-      do
+
+      memId = getValidStringInput("Nhap ID thanh vien " + to_string(i + 1) + ": ", 12, false);
+      if (familyMembers.find(memId) == familyMembers.end())
       {
-        memId = getValidStringInput("Nhap ID thanh vien " + to_string(i + 1) + ": ", 12, false);
-        if (familyMembers.find(memId) == familyMembers.end())
-        {
-          cout << "Loi: ID thanh vien " << memId << " khong ton tai! Vui long them thanh vien truoc.\n";
-        }
-        else if (familyMembers[memId].getHeadId() != headId)
-        {
-          cout << "Loi: ID chu ho cua thanh vien (" << familyMembers[memId].getHeadId() << ") khong khop voi chu ho (" << headId << ").\n";
-        }
-        else
-        {
-          break;
-        }
-      } while (true);
+        cout << "Loi: ID thanh vien " << memId << " khong ton tai! Vui long them thanh vien truoc.\n";
+        return;
+      }
+      else if (familyMembers[memId].getHeadId() != headId)
+      {
+        cout << "Loi: ID chu ho cua thanh vien (" << familyMembers[memId].getHeadId() << ") khong khop voi chu ho (" << headId << ").\n";
+        return;
+      }
+
       memberIds.push_back(memId);
     }
   }
@@ -102,6 +111,7 @@ void StreetManager::addHousehold()
       string expStr = getValidStringInput("Nhap ngay het han tam tru (dd/mm/yyyy, sau " +
                                               Date::currentDate().toString() + ", vi du: 01/12/2023): ",
                                           10, false);
+      string errorMsg;
       expiryDate = Date::fromString(expStr, errorMsg);
       if (!expiryDate.isValid())
       {
@@ -516,9 +526,9 @@ void StreetManager::reportByType() const
       permCount++;
     else if (h->getType() == "Temporary")
       tempCount++;
-    if (h->getSpecialStatus() == "Ngheo")
+    if (h->getSpecialStatus() == SpecialStatus::Poor)
       poorCount++;
-    else if (h->getSpecialStatus() == "Can ngheo")
+    else if (h->getSpecialStatus() == SpecialStatus::NearPoor)
       nearPoorCount++;
   }
   cout << "Thong ke:\n";
@@ -622,7 +632,19 @@ bool StreetManager::saveToCsv() const
     {
       file << h->getAddress() << ";";
       file << h->getType() << ";";
-      file << h->getSpecialStatus() << ";";
+      switch (h->getSpecialStatus())
+      {
+      case SpecialStatus::None:
+        file << "";
+        break;
+      case SpecialStatus::NearPoor:
+        file << "NearPoor";
+        break;
+      case SpecialStatus::Poor:
+        file << "Poor";
+        break;
+      }
+      file << ";";
       if (h->getType() == "Temporary")
       {
         auto tempH = dynamic_cast<const TemporaryHousehold *>(h.get());
@@ -818,15 +840,21 @@ bool StreetManager::loadFromCsv()
       }
       string address = fields[0];
       string type = fields[1];
-      string specialStatus = fields[2];
+      string specialStatusStr = fields[2];
       string expiryDateStr = fields[3];
       string headId = fields[4];
       string memberIdsStr = fields.size() > 5 ? fields[5] : "";
 
-      string errorMsg;
-      if (!isValidSpecialStatus(specialStatus, errorMsg))
+      SpecialStatus specialStatus;
+      if (specialStatusStr.empty())
+        specialStatus = SpecialStatus::None;
+      else if (specialStatusStr == "NearPoor")
+        specialStatus = SpecialStatus::NearPoor;
+      else if (specialStatusStr == "Poor")
+        specialStatus = SpecialStatus::Poor;
+      else
       {
-        cout << "Canh bao: Trang thai dac biet khong hop le cho ho tai " << address << ": " << errorMsg << "\n";
+        cout << "Canh bao: Trang thai dac biet khong hop le cho ho tai " << address << ": " << specialStatusStr << "\n";
         continue;
       }
 
@@ -849,7 +877,7 @@ bool StreetManager::loadFromCsv()
         memberIds = split(memberIdsStr, ',');
         for (const auto &memId : memberIds)
         {
-          if (familyMembers.find(memId) == familyMembers.end())
+          if (auto search = familyMembers.find(memId); search == familyMembers.end())
           {
             cout << "Canh bao: ID thanh vien " << memId << " khong ton tai cho ho tai " << address << "\n";
           }
@@ -867,6 +895,7 @@ bool StreetManager::loadFromCsv()
       }
       else if (type == "Temporary")
       {
+        string errorMsg;
         Date expiryDate = Date::fromString(expiryDateStr, errorMsg);
         if (!expiryDate.isValid() || !expiryDate.isFuture())
         {

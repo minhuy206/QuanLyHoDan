@@ -5,25 +5,32 @@
 #include <vector>
 #include <string>
 
+enum class SpecialStatus
+{
+  None,
+  NearPoor,
+  Poor
+};
+
 class Household
 {
 protected:
   std::string address;
   std::string headId;
   std::vector<std::string> memberIds;
-  std::string specialStatus;
+  SpecialStatus specialStatus;
 
 public:
   Household(const std::string &addr = "", const std::string &hId = "",
-            const std::vector<std::string> &memIds = {}, const std::string &status = "");
-  virtual ~Household() = default; // Add virtual destructor
+            const std::vector<std::string> &memIds = {}, SpecialStatus status = SpecialStatus::None);
+  virtual ~Household() = default;
   virtual void input();
   virtual void display() const = 0;
   virtual void edit();
   virtual std::string getType() const = 0;
   std::string getAddress() const;
   std::string getHeadId() const;
-  std::string getSpecialStatus() const;
+  SpecialStatus getSpecialStatus() const;
   const std::vector<std::string> &getMemberIds() const;
 };
 
@@ -31,7 +38,7 @@ class PermanentHousehold : public Household
 {
 public:
   PermanentHousehold(const std::string &addr = "", const std::string &hId = "",
-                     const std::vector<std::string> &memIds = {}, const std::string &status = "");
+                     const std::vector<std::string> &memIds = {}, SpecialStatus status = SpecialStatus::None);
   void display() const override;
   std::string getType() const override;
 };
@@ -43,7 +50,7 @@ private:
 
 public:
   TemporaryHousehold(const std::string &addr = "", const std::string &hId = "",
-                     const std::vector<std::string> &memIds = {}, const std::string &status = "",
+                     const std::vector<std::string> &memIds = {}, SpecialStatus status = SpecialStatus::None,
                      const Date &exp = {1, 1, 1900});
   void input() override;
   void display() const override;

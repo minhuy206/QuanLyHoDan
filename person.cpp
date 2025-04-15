@@ -1,5 +1,6 @@
 #include "person.h"
 #include "helpers.h"
+#include "street_manager.h"
 #include <iostream>
 
 using namespace std;
@@ -26,7 +27,11 @@ void Person::input()
     {
       cout << "Loi: " << errorMsg << " Vui long nhap lai.\n";
     }
-  } while (!dob.isValid());
+    else if (dob.isFuture())
+    {
+      cout << "Loi: Ngay sinh khong duoc la ngay tuong lai. Vui long nhap lai.\n";
+    }
+  } while (!dob.isValid() || dob.isFuture());
   string id;
   do
   {
@@ -92,13 +97,13 @@ void Person::display() const
   switch (gender)
   {
   case Gender::Male:
-    cout << "Nam";
+    cout << "Nam" << endl;
     break;
   case Gender::Female:
-    cout << "Nu";
+    cout << "Nu" << endl;
     break;
   case Gender::Other:
-    cout << "Khac";
+    cout << "Khac" << endl;
     break;
   }
 }
@@ -200,7 +205,6 @@ void FamilyMember::edit()
 void FamilyMember::display() const
 {
   Person::display();
-  cout << endl;
   cout << "Quan he voi chu ho: ";
   switch (relationship)
   {
@@ -221,7 +225,6 @@ void FamilyMember::display() const
     break;
   }
   cout << endl;
-  cout << "ID chu ho: " << headId;
 }
 
 Relationship FamilyMember::getRelationship() const { return relationship; }

@@ -46,8 +46,10 @@ Date Date::currentDate()
 
 bool Date::isValid() const
 {
-  if (month < 1 || month > 12 || day < 1 || year < 1900)
+  if (month < 1 || month > 12 || day < 1 || year <= 1900)
+  {
     return false;
+  }
   int daysInMonth[] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
   if ((year % 4 == 0 && year % 100 != 0) || (year % 400 == 0))
   {
@@ -104,19 +106,6 @@ bool isValidIdNumber(const string &id, const set<string> &usedIds, string &error
   if (usedIds.count(id))
   {
     errorMsg = "ID da duoc su dung";
-    return false;
-  }
-  errorMsg = "";
-  return true;
-}
-
-bool isValidSpecialStatus(const string &status, string &errorMsg)
-{
-  if (status.empty())
-    return true;
-  if (status != "Ngheo" && status != "Can ngheo")
-  {
-    errorMsg = "Trang thai dac biet chi duoc la 'Ngheo' hoac 'Can ngheo'";
     return false;
   }
   errorMsg = "";
