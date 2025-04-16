@@ -13,7 +13,7 @@ void Menu::displayMenu() const
   cout << "2. Chinh sua ho dan\n";
   cout << "3. Xoa ho dan\n";
   cout << "4. Quan ly thanh vien ho\n";
-  cout << "5. Quan ly thanh vien\n";
+  cout << "5. Quan ly nguoi dan\n";
   cout << "6. Tim ho tam tru het han\n";
   cout << "7. Hien thi tat ca ho dan\n";
   cout << "8. Tim kiem theo dia chi\n";
@@ -51,7 +51,7 @@ void Menu::run()
       manager.manageHouseholdMembers();
       break;
     case 5:
-      manager.manageMembers();
+      manager.managePersons();
       break;
     case 6:
       manager.findExpiredTemporaryHouseholds();

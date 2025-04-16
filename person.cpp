@@ -147,7 +147,11 @@ FamilyMember::FamilyMember(const string &n, const Date &d, const string &id, Gen
 void FamilyMember::input()
 {
   Person::input();
-  this->headId = getValidStringInput("Nhap ID cua chu ho: ", 12, false);
+}
+
+void FamilyMember::inputHeadIdAndRelationship(string headId)
+{
+  this->headId = headId;
   cout << "Nhap quan he voi chu ho:\n";
   cout << "1. Vo/Chong\n2. Con\n3. Cha/Me\n4. Anh/Chi/Em\n5. Khac\n";
   auto relChoice = getValidIntegerInput("Nhap lua chon: ", 1, 5);
@@ -168,7 +172,7 @@ void FamilyMember::input()
     this->relationship = Relationship::Sibling;
     break;
   default:
-    this->relationship = Relationship::Other;
+    this->relationship = Relationship::None;
     break;
   }
 }
@@ -198,7 +202,7 @@ void FamilyMember::inputWithoutId(string id, string headId)
     this->relationship = Relationship::Sibling;
     break;
   default:
-    this->relationship = Relationship::Other;
+    this->relationship = Relationship::None;
     break;
   }
 }
@@ -207,28 +211,31 @@ void FamilyMember::edit()
 {
   cout << "Chinh sua thong tin (ID va ID chu ho khong the thay doi):\n";
   Person::inputWithoutId();
-  cout << "Nhap quan he voi chu ho:\n";
-  cout << "1. Vo/Chong\n2. Con\n3. Cha/Me\n4. Anh/Chi/Em\n5. Khac\n";
-  auto relChoice = getValidIntegerInput("Nhap lua chon: ", 1, 5);
-  if (!relChoice)
-    return;
-  switch (*relChoice)
+  if (this->relationship != Relationship::None)
   {
-  case 1:
-    this->relationship = Relationship::Spouse;
-    break;
-  case 2:
-    this->relationship = Relationship::Child;
-    break;
-  case 3:
-    this->relationship = Relationship::Parent;
-    break;
-  case 4:
-    this->relationship = Relationship::Sibling;
-    break;
-  default:
-    this->relationship = Relationship::Other;
-    break;
+    cout << "Nhap quan he voi chu ho:\n";
+    cout << "1. Vo/Chong\n2. Con\n3. Cha/Me\n4. Anh/Chi/Em\n5. Khac\n";
+    auto relChoice = getValidIntegerInput("Nhap lua chon: ", 1, 5);
+    if (!relChoice)
+      return;
+    switch (*relChoice)
+    {
+    case 1:
+      this->relationship = Relationship::Spouse;
+      break;
+    case 2:
+      this->relationship = Relationship::Child;
+      break;
+    case 3:
+      this->relationship = Relationship::Parent;
+      break;
+    case 4:
+      this->relationship = Relationship::Sibling;
+      break;
+    default:
+      this->relationship = Relationship::None;
+      break;
+    }
   }
 }
 
@@ -250,8 +257,8 @@ void FamilyMember::display() const
   case Relationship::Sibling:
     cout << "Anh/Chi/Em";
     break;
-  case Relationship::Other:
-    cout << "Khac";
+  case Relationship::None:
+    cout << "Khong";
     break;
   }
   cout << endl;

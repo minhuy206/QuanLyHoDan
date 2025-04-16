@@ -30,8 +30,8 @@ public:
   virtual void display() const;
   virtual void edit();
   std::string getId() const;
-  const Date &getDob() const;         // Thay đổi: const member function, trả về const reference
-  const std::string &getName() const; // Thay đổi: const member function, trả về const reference
+  const Date &getDob() const;
+  const std::string &getName() const;
   Gender getGender() const;
   virtual ~Person() {}
 };
@@ -51,7 +51,7 @@ enum class Relationship
   Child,
   Parent,
   Sibling,
-  Other
+  None
 };
 
 class FamilyMember : public Person
@@ -63,9 +63,10 @@ private:
 public:
   FamilyMember(const std::string &n = "", const Date &d = {1, 1, 1900},
                const std::string &id = "", Gender g = Gender::Other,
-               Relationship rel = Relationship::Other,
+               Relationship rel = Relationship::None,
                const std::string &headId = "");
   void input() override;
+  void inputHeadIdAndRelationship(std::string headId);
   void inputWithoutId(std::string id, std::string headId);
   void display() const override;
   void edit() override;

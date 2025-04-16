@@ -10,7 +10,7 @@ bool StreetManager::isAddressUnique(const string &addr) const
 {
   for (const auto &h : households)
   {
-    if (addr.compare(h->getAddress()))
+    if (!addr.compare(h->getAddress()))
     {
       return false;
     }
@@ -92,7 +92,13 @@ void StreetManager::addHousehold()
         memId = getValidStringInput("Nhap ID (9 hoac 12 chu so): ", 12, false);
         if (heads.find(memId) != heads.end())
         {
-          cout << "Loi: ID thanh vien " << memId << " da ton tai trong danh sach chu ho! Vui long nhap lai!\n";
+          cout << "Loi: ID thanh vien " << memId << " da ton tai! Vui long nhap lai!\n";
+        }
+        else if (familyMembers.find(memId) != familyMembers.end())
+        {
+          FamilyMember fm = familyMembers.at(memId);
+          fm.inputHeadIdAndRelationship(h->getHeadId());
+          break;
         }
         else if (familyMembers.find(memId) == familyMembers.end())
         {
@@ -156,9 +162,9 @@ void StreetManager::editHousehold()
       do
       {
         h->edit();
-        if (oldAddr.compare(h->getAddress()) == 0 || isAddressUnique(h->getAddress()))
+        if (!oldAddr.compare(h->getAddress()))
         {
-          cout << "Loi: Dia chi moi " << h->getAddress() << " da ton tai! Quay lai dia chi cu.\n";
+          cout << "Loi: Dia chi moi " << h->getAddress() << " trung voi dia chi cu. Vui long nhap lai!\n";
         }
         else
         {
@@ -224,20 +230,29 @@ void StreetManager::manageHouseholdMembers()
           string memId;
           do
           {
-            memId = getValidStringInput("Nhap ID thanh vien: ", 12, false);
-            if (familyMembers.find(memId) == familyMembers.end())
+            memId = getValidStringInput("Nhap ID (9 hoac 12 chu so): ", 12, false);
+            if (heads.find(memId) != heads.end())
             {
-              cout << "Loi: ID thanh vien " << memId << " khong ton tai! Vui long them thanh vien truoc.\n";
+              cout << "Loi: ID thanh vien " << memId << " da ton tai! Vui long nhap lai!\n";
+            }
+            else if (familyMembers.find(memId) != familyMembers.end())
+            {
+              FamilyMember fm = familyMembers.at(memId);
+              fm.inputHeadIdAndRelationship(h->getHeadId());
+              break;
+            }
+            else if (familyMembers.find(memId) == familyMembers.end())
+            {
+              cout << "ID thanh vien " << memId << " khong ton tai! Vui long them thanh vien truoc.\n";
+              this->addMemberWithOutId(memId, h->getHeadId());
+              break;
             }
             else if (familyMembers[memId].getHeadId() != h->getHeadId())
             {
-              cout << "Loi: ID chu ho cua thanh vien (" << familyMembers[memId].getHeadId() << ") khong khop voi chu ho (" << h->getHeadId() << ").\n";
-            }
-            else
-            {
-              break;
+              cout << "Loi: ID chu ho cua thanh vien (" << familyMembers[memId].getHeadId() << ") khong khop voi chu ho (" << h->getHeadId() << "). Vui long nhap lai!\n";
             }
           } while (true);
+
           auto &memIds = const_cast<vector<string> &>(h->getMemberIds());
           memIds.push_back(memId);
           cout << "Them thanh vien vao ho thanh cong!\n";
@@ -272,54 +287,6 @@ void StreetManager::manageHouseholdMembers()
   cout << "Khong tim thay ho dan voi dia chi hoac ID: " << searchTerm << endl;
 }
 
-void StreetManager::manageMembers()
-{
-  while (true)
-  {
-    cout << "\nQUAN LY THANH VIEN\n";
-    cout << "1. Them thanh vien\n";
-    cout << "2. Chinh sua thanh vien\n";
-    cout << "3. Xoa thanh vien\n";
-    cout << "0. Quay lai\n";
-    auto choice = getValidIntegerInput("Nhap lua chon: ", 0, 3);
-    if (!choice || *choice == 0)
-      break;
-    switch (*choice)
-    {
-    case 1:
-      addMember();
-      break;
-    case 2:
-      editMember();
-      break;
-    case 3:
-      deleteMember();
-      break;
-    }
-  }
-}
-
-void StreetManager::addMember()
-{
-  FamilyMember fm;
-  cout << "Nhap thong tin thanh vien:\n";
-  fm.input();
-  string memId = fm.getId();
-  if (familyMembers.find(memId) != familyMembers.end())
-  {
-    cout << "Loi: ID thanh vien " << memId << " da ton tai!\n";
-    return;
-  }
-  string headId = fm.getHeadId();
-  if (heads.find(headId) == heads.end())
-  {
-    cout << "Loi: ID chu ho " << headId << " khong ton tai!\n";
-    return;
-  }
-  familyMembers[memId] = fm;
-  cout << "Them thanh vien thanh cong!\n";
-}
-
 void StreetManager::addMemberWithOutId(string id, string headId)
 {
   FamilyMember fm;
@@ -340,28 +307,70 @@ void StreetManager::addMemberWithOutId(string id, string headId)
   cout << "Them thanh vien thanh cong!\n";
 }
 
-void StreetManager::editMember()
+void StreetManager::managePersons()
 {
-  string memId = getValidStringInput("Nhap ID thanh vien can chinh sua: ", 12, false);
-  if (familyMembers.find(memId) == familyMembers.end())
+  while (true)
   {
-    cout << "Khong tim thay thanh vien voi ID: " << memId << endl;
-    return;
+    cout << "\nQUAN LY NGUOI DAN\n";
+    cout << "1. Them nguoi dan\n";
+    cout << "2. Chinh sua nguoi dan\n";
+    cout << "3. Xoa nguoi dan\n";
+    cout << "0. Quay lai\n";
+    auto choice = getValidIntegerInput("Nhap lua chon: ", 0, 3);
+    if (!choice || *choice == 0)
+      break;
+    switch (*choice)
+    {
+    case 1:
+      addPerson();
+      break;
+    case 2:
+      editPerson();
+      break;
+    case 3:
+      deletePerson();
+      break;
+    }
   }
-  cout << "Chinh sua thong tin thanh vien:\n";
-  familyMembers[memId].edit();
-  cout << "Chinh sua thanh vien thanh cong!\n";
 }
 
-void StreetManager::deleteMember()
+void StreetManager::addPerson()
 {
-  string memId = getValidStringInput("Nhap ID thanh vien can xoa: ", 12, false);
-  if (familyMembers.find(memId) == familyMembers.end())
+  FamilyMember fm;
+  cout << "Nhap thong tin nguoi dan:\n";
+  fm.input();
+  string memId = fm.getId();
+  if (familyMembers.find(memId) != familyMembers.end())
   {
-    cout << "Khong tim thay thanh vien voi ID: " << memId << endl;
+    cout << "Loi: ID nguoi dan " << memId << " da ton tai!\n";
     return;
   }
-  auto confirm = getValidIntegerInput("Ban co chac muon xoa thanh vien nay? (1: Co, 0: Khong): ", 0, 1);
+  familyMembers[memId] = fm;
+  cout << "Them nguoi dan thanh cong!\n";
+}
+
+void StreetManager::editPerson()
+{
+  string memId = getValidStringInput("Nhap ID nguoi dan can chinh sua: ", 12, false);
+  if (familyMembers.find(memId) == familyMembers.end())
+  {
+    cout << "Khong tim thay nguoi dan voi ID: " << memId << endl;
+    return;
+  }
+  cout << "Chinh sua thong tin nguoi dan:\n";
+  familyMembers[memId].edit();
+  cout << "Chinh sua nguoi dan thanh cong!\n";
+}
+
+void StreetManager::deletePerson()
+{
+  string memId = getValidStringInput("Nhap ID nguoi dan can xoa: ", 12, false);
+  if (familyMembers.find(memId) == familyMembers.end())
+  {
+    cout << "Khong tim thay nguoi dan voi ID: " << memId << endl;
+    return;
+  }
+  auto confirm = getValidIntegerInput("Ban co chac muon xoa nguoi dan nay? (1: Co, 0: Khong): ", 0, 1);
   if (confirm && *confirm == 1)
   {
     for (auto &h : households)
@@ -370,7 +379,7 @@ void StreetManager::deleteMember()
       memIds.erase(remove(memIds.begin(), memIds.end(), memId), memIds.end());
     }
     familyMembers.erase(memId);
-    cout << "Xoa thanh vien thanh cong!\n";
+    cout << "Xoa nguoi dan thanh cong!\n";
   }
   else
   {
@@ -831,7 +840,7 @@ bool StreetManager::loadFromCsv()
         else if (relStr == "Sibling")
           rel = Relationship::Sibling;
         else
-          rel = Relationship::Other;
+          rel = Relationship::None;
 
         if (heads.find(headId) == heads.end())
         {

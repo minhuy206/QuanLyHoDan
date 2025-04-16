@@ -19,7 +19,7 @@ public:
   void editHousehold();
   void deleteHousehold();
   void manageHouseholdMembers();
-  void manageMembers();
+  void managePersons();
   void findExpiredTemporaryHouseholds();
   void displayAll() const;
   void searchByAddress(const std::string &addr) const;
@@ -29,10 +29,10 @@ public:
   bool loadFromCsv();
   const HouseholdHead *getHead(const std::string &id) const;
   const FamilyMember *getMember(const std::string &id) const;
-  void addMember();
+  void addPerson();
   void addMemberWithOutId(std::string id, std::string headId);
-  void editMember();
-  void deleteMember();
+  void editPerson();
+  void deletePerson();
 };
 
 #endif // STREET_MANAGER_H
