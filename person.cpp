@@ -16,26 +16,26 @@ Person::Person(const string &n, const Date &d, const string &id, Gender g)
 
 void Person::input()
 {
-  name = getValidStringInput("Nhap ten: ", 50, false);
+  this->name = getValidStringInput("Nhap ten: ", 50, false);
   string dobStr;
   string errorMsg;
   do
   {
     dobStr = getValidStringInput("Nhap ngay sinh (dd/mm/yyyy, vi du: 01/01/1980): ", 10, false);
-    dob = Date::fromString(dobStr, errorMsg);
-    if (!dob.isValid())
+    this->dob = Date::fromString(dobStr, errorMsg);
+    if (!this->dob.isValid())
     {
       cout << "Loi: " << errorMsg << " Vui long nhap lai.\n";
     }
-    else if (dob.isFuture())
+    else if (this->dob.isFuture())
     {
       cout << "Loi: Ngay sinh khong duoc la ngay tuong lai. Vui long nhap lai.\n";
     }
-  } while (!dob.isValid() || dob.isFuture());
+  } while (!this->dob.isValid() || this->dob.isFuture());
   string id;
   do
   {
-    id = getValidStringInput("Nhap ID (9 hoac 12 chu so, de trong neu khong co): ", 12, true);
+    id = getValidStringInput("Nhap ID (9 hoac 12 chu so): ", 12, false);
     if (!id.empty() && !isValidIdNumber(id, usedIds, errorMsg))
     {
       cout << "Loi: " << errorMsg << " Vui long nhap lai.\n";
@@ -51,14 +51,14 @@ void Person::input()
     this->id = id;
     usedIds.insert(this->id);
   }
-  gender = Gender::Other;
+  this->gender = Gender::Other;
   auto genderChoice = getValidIntegerInput("Nhap gioi tinh (1: Nam, 2: Nu, 3: Khac): ", 1, 3);
   if (genderChoice)
   {
     if (*genderChoice == 1)
-      gender = Gender::Male;
+      this->gender = Gender::Male;
     else if (*genderChoice == 2)
-      gender = Gender::Female;
+      this->gender = Gender::Female;
   }
 }
 
@@ -70,31 +70,31 @@ void Person::inputWithoutId()
   do
   {
     dobStr = getValidStringInput("Nhap ngay sinh (dd/mm/yyyy, vi du: 01/01/1980): ", 10, false);
-    dob = Date::fromString(dobStr, errorMsg);
-    if (!dob.isValid())
+    this->dob = Date::fromString(dobStr, errorMsg);
+    if (!this->dob.isValid())
     {
       cout << "Loi: " << errorMsg << " Vui long nhap lai.\n";
     }
-  } while (!dob.isValid());
-  gender = Gender::Other;
+  } while (!this->dob.isValid());
+  this->gender = Gender::Other;
   auto genderChoice = getValidIntegerInput("Nhap gioi tinh (1: Nam, 2: Nu, 3: Khac): ", 1, 3);
   if (genderChoice)
   {
     if (*genderChoice == 1)
-      gender = Gender::Male;
+      this->gender = Gender::Male;
     else if (*genderChoice == 2)
-      gender = Gender::Female;
+      this->gender = Gender::Female;
   }
 }
 
 void Person::display() const
 {
   cout << "Ten: " << name << endl;
-  cout << "Ngay sinh: " << dob.toString() << endl;
+  cout << "Ngay sinh: " << this->dob.toString() << endl;
   if (!id.empty())
     cout << "ID: " << id << endl;
   cout << "Gioi tinh: ";
-  switch (gender)
+  switch (this->gender)
   {
   case Gender::Male:
     cout << "Nam" << endl;
@@ -118,7 +118,7 @@ string Person::getId() const { return id; }
 
 const Date &Person::getDob() const
 {
-  return dob;
+  return this->dob;
 }
 
 const std::string &Person::getName() const
@@ -126,7 +126,7 @@ const std::string &Person::getName() const
   return name;
 }
 
-Gender Person::getGender() const { return gender; }
+Gender Person::getGender() const { return this->gender; }
 
 HouseholdHead::HouseholdHead(const string &n, const Date &d, const string &id, Gender g)
     : Person(n, d, id, g) {}
@@ -147,7 +147,7 @@ FamilyMember::FamilyMember(const string &n, const Date &d, const string &id, Gen
 void FamilyMember::input()
 {
   Person::input();
-  headId = getValidStringInput("Nhap ID cua chu ho: ", 12, false);
+  this->headId = getValidStringInput("Nhap ID cua chu ho: ", 12, false);
   cout << "Nhap quan he voi chu ho:\n";
   cout << "1. Vo/Chong\n2. Con\n3. Cha/Me\n4. Anh/Chi/Em\n5. Khac\n";
   auto relChoice = getValidIntegerInput("Nhap lua chon: ", 1, 5);
@@ -156,19 +156,49 @@ void FamilyMember::input()
   switch (*relChoice)
   {
   case 1:
-    relationship = Relationship::Spouse;
+    this->relationship = Relationship::Spouse;
     break;
   case 2:
-    relationship = Relationship::Child;
+    this->relationship = Relationship::Child;
     break;
   case 3:
-    relationship = Relationship::Parent;
+    this->relationship = Relationship::Parent;
     break;
   case 4:
-    relationship = Relationship::Sibling;
+    this->relationship = Relationship::Sibling;
     break;
   default:
-    relationship = Relationship::Other;
+    this->relationship = Relationship::Other;
+    break;
+  }
+}
+
+void FamilyMember::inputWithoutId(string id, string headId)
+{
+  Person::inputWithoutId();
+  this->id = id;
+  this->headId = headId;
+  cout << "Nhap quan he voi chu ho:\n";
+  cout << "1. Vo/Chong\n2. Con\n3. Cha/Me\n4. Anh/Chi/Em\n5. Khac\n";
+  auto relChoice = getValidIntegerInput("Nhap lua chon: ", 1, 5);
+  if (!relChoice)
+    return;
+  switch (*relChoice)
+  {
+  case 1:
+    this->relationship = Relationship::Spouse;
+    break;
+  case 2:
+    this->relationship = Relationship::Child;
+    break;
+  case 3:
+    this->relationship = Relationship::Parent;
+    break;
+  case 4:
+    this->relationship = Relationship::Sibling;
+    break;
+  default:
+    this->relationship = Relationship::Other;
     break;
   }
 }
@@ -176,7 +206,7 @@ void FamilyMember::input()
 void FamilyMember::edit()
 {
   cout << "Chinh sua thong tin (ID va ID chu ho khong the thay doi):\n";
-  inputWithoutId();
+  Person::inputWithoutId();
   cout << "Nhap quan he voi chu ho:\n";
   cout << "1. Vo/Chong\n2. Con\n3. Cha/Me\n4. Anh/Chi/Em\n5. Khac\n";
   auto relChoice = getValidIntegerInput("Nhap lua chon: ", 1, 5);
@@ -185,19 +215,19 @@ void FamilyMember::edit()
   switch (*relChoice)
   {
   case 1:
-    relationship = Relationship::Spouse;
+    this->relationship = Relationship::Spouse;
     break;
   case 2:
-    relationship = Relationship::Child;
+    this->relationship = Relationship::Child;
     break;
   case 3:
-    relationship = Relationship::Parent;
+    this->relationship = Relationship::Parent;
     break;
   case 4:
-    relationship = Relationship::Sibling;
+    this->relationship = Relationship::Sibling;
     break;
   default:
-    relationship = Relationship::Other;
+    this->relationship = Relationship::Other;
     break;
   }
 }
@@ -206,7 +236,7 @@ void FamilyMember::display() const
 {
   Person::display();
   cout << "Quan he voi chu ho: ";
-  switch (relationship)
+  switch (this->relationship)
   {
   case Relationship::Spouse:
     cout << "Vo/Chong";
@@ -227,6 +257,6 @@ void FamilyMember::display() const
   cout << endl;
 }
 
-Relationship FamilyMember::getRelationship() const { return relationship; }
+Relationship FamilyMember::getRelationship() const { return this->relationship; }
 
-string FamilyMember::getHeadId() const { return headId; }
+string FamilyMember::getHeadId() const { return this->headId; }

@@ -14,13 +14,14 @@ enum class Gender
 
 class Person
 {
+
 protected:
   std::string name;
   Date dob;
   std::string id;
   Gender gender;
-  static std::set<std::string> usedIds;
   void inputWithoutId();
+  static std::set<std::string> usedIds;
 
 public:
   Person(const std::string &n = "", const Date &d = {1, 1, 1900},
@@ -65,6 +66,7 @@ public:
                Relationship rel = Relationship::Other,
                const std::string &headId = "");
   void input() override;
+  void inputWithoutId(std::string id, std::string headId);
   void display() const override;
   void edit() override;
   Relationship getRelationship() const;

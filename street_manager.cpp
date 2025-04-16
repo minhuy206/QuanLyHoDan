@@ -10,7 +10,7 @@ bool StreetManager::isAddressUnique(const string &addr) const
 {
   for (const auto &h : households)
   {
-    if (h->getAddress() == addr)
+    if (addr.compare(h->getAddress()))
     {
       return false;
     }
@@ -53,6 +53,11 @@ void StreetManager::addHousehold()
     cout << "Loi: ID chu ho " << headId << " da ton tai!\n";
     return;
   }
+  else if (familyMembers.find(headId) != familyMembers.end())
+  {
+    cout << "Loi: ID chu ho " << headId << " da ton tai trong danh sach thanh vien!\n";
+    return;
+  }
   heads[headId] = head;
 
   SpecialStatus status = SpecialStatus::None;
@@ -82,18 +87,24 @@ void StreetManager::addHousehold()
     for (int i = 0; i < *numMembers; ++i)
     {
       string memId;
-
-      memId = getValidStringInput("Nhap ID thanh vien " + to_string(i + 1) + ": ", 12, false);
-      if (familyMembers.find(memId) == familyMembers.end())
+      do
       {
-        cout << "Loi: ID thanh vien " << memId << " khong ton tai! Vui long them thanh vien truoc.\n";
-        return;
-      }
-      else if (familyMembers[memId].getHeadId() != headId)
-      {
-        cout << "Loi: ID chu ho cua thanh vien (" << familyMembers[memId].getHeadId() << ") khong khop voi chu ho (" << headId << ").\n";
-        return;
-      }
+        memId = getValidStringInput("Nhap ID (9 hoac 12 chu so): ", 12, false);
+        if (heads.find(memId) != heads.end())
+        {
+          cout << "Loi: ID thanh vien " << memId << " da ton tai trong danh sach chu ho! Vui long nhap lai!\n";
+        }
+        else if (familyMembers.find(memId) == familyMembers.end())
+        {
+          cout << "ID thanh vien " << memId << " khong ton tai! Vui long them thanh vien truoc.\n";
+          this->addMemberWithOutId(memId, headId);
+          break;
+        }
+        else if (familyMembers[memId].getHeadId() != headId)
+        {
+          cout << "Loi: ID chu ho cua thanh vien (" << familyMembers[memId].getHeadId() << ") khong khop voi chu ho (" << headId << "). Vui long nhap lai!\n";
+        }
+      } while (true);
 
       memberIds.push_back(memId);
     }
@@ -130,7 +141,6 @@ void StreetManager::addHousehold()
   }
   households.push_back(move(h));
   cout << "Them ho dan thanh cong!\n";
-  saveToCsv();
 }
 
 void StreetManager::editHousehold()
@@ -143,14 +153,20 @@ void StreetManager::editHousehold()
     if (h->getAddress() == searchTerm || h->getHeadId() == searchTerm)
     {
       string oldAddr = h->getAddress();
-      h->edit();
-      if (h->getAddress() != oldAddr && !isAddressUnique(h->getAddress()))
+      do
       {
-        cout << "Loi: Dia chi moi " << h->getAddress() << " da ton tai! Quay lai dia chi cu.\n";
         h->edit();
-      }
+        if (oldAddr.compare(h->getAddress()) == 0 || isAddressUnique(h->getAddress()))
+        {
+          cout << "Loi: Dia chi moi " << h->getAddress() << " da ton tai! Quay lai dia chi cu.\n";
+        }
+        else
+        {
+          break;
+        }
+      } while (true);
       cout << "Chinh sua ho dan thanh cong!\n";
-      saveToCsv();
+
       return;
     }
   }
@@ -172,7 +188,6 @@ void StreetManager::deleteHousehold()
         heads.erase((*it)->getHeadId());
         households.erase(it);
         cout << "Xoa ho dan thanh cong!\n";
-        saveToCsv();
       }
       else
       {
@@ -250,7 +265,7 @@ void StreetManager::manageHouseholdMembers()
         }
         }
       }
-      saveToCsv();
+
       return;
     }
   }
@@ -303,7 +318,26 @@ void StreetManager::addMember()
   }
   familyMembers[memId] = fm;
   cout << "Them thanh vien thanh cong!\n";
-  saveToCsv();
+}
+
+void StreetManager::addMemberWithOutId(string id, string headId)
+{
+  FamilyMember fm;
+  cout << "Nhap thong tin thanh vien:\n";
+  fm.inputWithoutId(id, headId);
+  string memId = fm.getId();
+  if (familyMembers.find(memId) != familyMembers.end())
+  {
+    cout << "Loi: ID thanh vien " << memId << " da ton tai!\n";
+    return;
+  }
+  if (heads.find(headId) == heads.end())
+  {
+    cout << "Loi: ID chu ho " << headId << " khong ton tai!\n";
+    return;
+  }
+  familyMembers[memId] = fm;
+  cout << "Them thanh vien thanh cong!\n";
 }
 
 void StreetManager::editMember()
@@ -317,7 +351,6 @@ void StreetManager::editMember()
   cout << "Chinh sua thong tin thanh vien:\n";
   familyMembers[memId].edit();
   cout << "Chinh sua thanh vien thanh cong!\n";
-  saveToCsv();
 }
 
 void StreetManager::deleteMember()
@@ -338,7 +371,6 @@ void StreetManager::deleteMember()
     }
     familyMembers.erase(memId);
     cout << "Xoa thanh vien thanh cong!\n";
-    saveToCsv();
   }
   else
   {
@@ -379,7 +411,6 @@ void StreetManager::findExpiredTemporaryHouseholds()
       households.erase(households.begin() + *it);
     }
     cout << "Da xoa tat ca ho tam tru het han.\n";
-    saveToCsv();
   }
 }
 
@@ -900,7 +931,6 @@ bool StreetManager::loadFromCsv()
         if (!expiryDate.isValid() || !expiryDate.isFuture())
         {
           cout << "Canh bao: Ngay het han tam tru khong hop le cho ho tai " << address << ": " << errorMsg << "\n";
-          continue;
         }
         h = make_unique<TemporaryHousehold>(address, headId, memberIds, specialStatus, expiryDate);
       }

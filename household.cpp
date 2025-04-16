@@ -3,14 +3,41 @@
 #include <iostream>
 
 using namespace std;
-
+set<string> Household::usedAddresses;
 Household::Household(const string &addr, const string &hId, const vector<string> &memIds, SpecialStatus status)
-    : address(addr), headId(hId), memberIds(memIds), specialStatus(status) {}
+    : address(addr), headId(hId), memberIds(memIds), specialStatus(status)
+{
+  if (!addr.empty())
+    usedAddresses.insert(addr);
+}
 
 void Household::input()
 {
-  address = getValidStringInput("Nhap dia chi ho: ", 100, false);
-  headId = getValidStringInput("Nhap ID chu ho: ", 12, false);
+
+  string address;
+  do
+  {
+    address = getValidStringInput("Nhap dia chi ho: ", 100, false);
+    if (address.empty())
+    {
+      cout << "Loi: Dia chi khong duoc de trong!\n";
+    }
+    else if (usedAddresses.count(address))
+    {
+      cout << "Loi: Dia chi " << address << " da ton tai!\n";
+    }
+    else
+    {
+      break;
+    }
+  } while (true);
+  if (!address.empty())
+  {
+    usedAddresses.erase(this->address);
+    this->address = address;
+    usedAddresses.insert(this->address);
+  }
+  this->headId = getValidStringInput("Nhap ID chu ho: ", 12, false);
   cout << "Nhap trang thai dac biet:\n";
   cout << "0. Khong co\n1. Can ngheo\n2. Ngheo\n";
   auto statusChoice = getValidIntegerInput("Nhap lua chon: ", 0, 2);
@@ -19,35 +46,58 @@ void Household::input()
     switch (*statusChoice)
     {
     case 0:
-      specialStatus = SpecialStatus::None;
+      this->specialStatus = SpecialStatus::None;
       break;
     case 1:
-      specialStatus = SpecialStatus::NearPoor;
+      this->specialStatus = SpecialStatus::NearPoor;
       break;
     case 2:
-      specialStatus = SpecialStatus::Poor;
+      this->specialStatus = SpecialStatus::Poor;
       break;
     }
   }
   else
   {
-    specialStatus = SpecialStatus::None;
+    this->specialStatus = SpecialStatus::None;
   }
   auto numMembers = getValidIntegerInput("Nhap so thanh vien (khong tinh chu ho): ", 0, 100);
   if (!numMembers)
     return;
-  memberIds.clear();
+  this->memberIds.clear();
   for (int i = 0; i < *numMembers; ++i)
   {
     string memId = getValidStringInput("Nhap ID thanh vien " + to_string(i + 1) + ": ", 12, false);
-    memberIds.push_back(memId);
+    this->memberIds.push_back(memId);
   }
 }
 
 void Household::edit()
 {
   cout << "Chinh sua thong tin ho dan (ID chu ho va thanh vien khong the thay doi):\n";
-  address = getValidStringInput("Nhap dia chi ho: ", 100, false);
+  string address;
+  do
+  {
+    cout << "Dia chi cu: " << this->address << endl;
+    address = getValidStringInput("Nhap dia chi moi: ", 100, false);
+    if (address.empty())
+    {
+      cout << "Loi: Dia chi khong duoc de trong!. Vui long nhap lai!\n";
+    }
+    else if (usedAddresses.count(address) || !address.compare(this->address))
+    {
+      cout << "Loi: Dia chi " << address << " da ton tai!. Vui long nhap lai!\n";
+    }
+    else
+    {
+      break;
+    }
+  } while (true);
+  if (!address.empty())
+  {
+    usedAddresses.erase(this->address);
+    this->address = address;
+    usedAddresses.insert(this->address);
+  }
   cout << "Nhap trang thai dac biet:\n";
   cout << "0. Khong co\n1. Can ngheo\n2. Ngheo\n";
   auto statusChoice = getValidIntegerInput("Nhap lua chon: ", 0, 2);
@@ -56,29 +106,29 @@ void Household::edit()
     switch (*statusChoice)
     {
     case 0:
-      specialStatus = SpecialStatus::None;
+      this->specialStatus = SpecialStatus::None;
       break;
     case 1:
-      specialStatus = SpecialStatus::NearPoor;
+      this->specialStatus = SpecialStatus::NearPoor;
       break;
     case 2:
-      specialStatus = SpecialStatus::Poor;
+      this->specialStatus = SpecialStatus::Poor;
       break;
     }
   }
   else
   {
-    specialStatus = SpecialStatus::None;
+    this->specialStatus = SpecialStatus::None;
   }
 }
 
-string Household::getAddress() const { return address; }
+string Household::getAddress() const { return this->address; }
 
-string Household::getHeadId() const { return headId; }
+string Household::getHeadId() const { return this->headId; }
 
-SpecialStatus Household::getSpecialStatus() const { return specialStatus; }
+SpecialStatus Household::getSpecialStatus() const { return this->specialStatus; }
 
-const vector<string> &Household::getMemberIds() const { return memberIds; }
+const vector<string> &Household::getMemberIds() const { return this->memberIds; }
 
 PermanentHousehold::PermanentHousehold(const string &addr, const string &hId,
                                        const vector<string> &memIds, SpecialStatus status)
@@ -86,22 +136,22 @@ PermanentHousehold::PermanentHousehold(const string &addr, const string &hId,
 
 void PermanentHousehold::display() const
 {
-  cout << "Ho thuong tru - So nha: " << address << endl;
-  cout << "Chu ho (ID): " << headId << endl;
-  cout << "So thanh vien: " << memberIds.size() << endl;
-  if (!memberIds.empty())
+  cout << "Ho thuong tru - So nha: " << this->address << endl;
+  cout << "Chu ho (ID): " << this->headId << endl;
+  cout << "So thanh vien: " << this->memberIds.size() << endl;
+  if (!this->memberIds.empty())
   {
     cout << "Danh sach ID thanh vien: ";
-    for (size_t i = 0; i < memberIds.size(); ++i)
+    for (size_t i = 0; i < this->memberIds.size(); ++i)
     {
-      cout << memberIds[i];
-      if (i < memberIds.size() - 1)
+      cout << this->memberIds[i];
+      if (i < this->memberIds.size() - 1)
         cout << ", ";
     }
     cout << endl;
   }
   cout << "Trang thai dac biet: ";
-  switch (specialStatus)
+  switch (this->specialStatus)
   {
   case SpecialStatus::None:
     cout << "Khong co";
@@ -124,39 +174,7 @@ TemporaryHousehold::TemporaryHousehold(const string &addr, const string &hId,
 
 void TemporaryHousehold::input()
 {
-  address = getValidStringInput("Nhap dia chi ho: ", 100, false);
-  headId = getValidStringInput("Nhap ID chu ho: ", 12, false);
-  cout << "Nhap trang thai dac biet:\n";
-  cout << "0. Khong co\n1. Can ngheo\n2. Ngheo\n";
-  auto statusChoice = getValidIntegerInput("Nhap lua chon: ", 0, 2);
-  if (statusChoice)
-  {
-    switch (*statusChoice)
-    {
-    case 0:
-      specialStatus = SpecialStatus::None;
-      break;
-    case 1:
-      specialStatus = SpecialStatus::NearPoor;
-      break;
-    case 2:
-      specialStatus = SpecialStatus::Poor;
-      break;
-    }
-  }
-  else
-  {
-    specialStatus = SpecialStatus::None;
-  }
-  auto numMembers = getValidIntegerInput("Nhap so thanh vien (khong tinh chu ho): ", 0, 100);
-  if (!numMembers)
-    return;
-  memberIds.clear();
-  for (int i = 0; i < *numMembers; ++i)
-  {
-    string memId = getValidStringInput("Nhap ID thanh vien " + to_string(i + 1) + ": ", 12, false);
-    memberIds.push_back(memId);
-  }
+  Household::input();
   string errorMsg;
   do
   {
@@ -181,30 +199,7 @@ void TemporaryHousehold::input()
 
 void TemporaryHousehold::edit()
 {
-  cout << "Chinh sua thong tin ho tam tru (ID chu ho va thanh vien khong the thay doi):\n";
-  address = getValidStringInput("Nhap dia chi ho: ", 100, false);
-  cout << "Nhap trang thai dac biet:\n";
-  cout << "0. Khong co\n1. Can ngheo\n2. Ngheo\n";
-  auto statusChoice = getValidIntegerInput("Nhap lua chon: ", 0, 2);
-  if (statusChoice)
-  {
-    switch (*statusChoice)
-    {
-    case 0:
-      specialStatus = SpecialStatus::None;
-      break;
-    case 1:
-      specialStatus = SpecialStatus::NearPoor;
-      break;
-    case 2:
-      specialStatus = SpecialStatus::Poor;
-      break;
-    }
-  }
-  else
-  {
-    specialStatus = SpecialStatus::None;
-  }
+  Household::edit();
   string errorMsg;
   do
   {
@@ -229,23 +224,23 @@ void TemporaryHousehold::edit()
 
 void TemporaryHousehold::display() const
 {
-  cout << "Ho tam tru - So nha: " << address << endl;
-  cout << "Chu ho (ID): " << headId << endl;
-  cout << "So thanh vien: " << memberIds.size() << endl;
-  if (!memberIds.empty())
+  cout << "Ho tam tru - So nha: " << this->address << endl;
+  cout << "Chu ho (ID): " << this->headId << endl;
+  cout << "So thanh vien: " << this->memberIds.size() << endl;
+  if (!this->memberIds.empty())
   {
     cout << "Danh sach ID thanh vien: ";
-    for (size_t i = 0; i < memberIds.size(); ++i)
+    for (size_t i = 0; i < this->memberIds.size(); ++i)
     {
-      cout << memberIds[i];
-      if (i < memberIds.size() - 1)
+      cout << this->memberIds[i];
+      if (i < this->memberIds.size() - 1)
         cout << ", ";
     }
     cout << endl;
   }
   cout << "Ngay het han tam tru: " << expiryDate.toString() << endl;
   cout << "Trang thai dac biet: ";
-  switch (specialStatus)
+  switch (this->specialStatus)
   {
   case SpecialStatus::None:
     cout << "Khong co";

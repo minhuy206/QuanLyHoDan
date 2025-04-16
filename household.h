@@ -19,6 +19,7 @@ protected:
   std::string headId;
   std::vector<std::string> memberIds;
   SpecialStatus specialStatus;
+  static std::set<std::string> usedAddresses;
 
 public:
   Household(const std::string &addr = "", const std::string &hId = "",

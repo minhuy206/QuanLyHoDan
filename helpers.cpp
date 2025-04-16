@@ -21,7 +21,7 @@ Date Date::fromString(const string &str, string &errorMsg)
   smatch match;
   if (!regex_match(str, match, datePattern))
   {
-    errorMsg = "Dinh dang ngay phai la dd/mm/yyyy";
+    errorMsg = "Dinh dang ngay phai la dd/mm/yyyy.";
     return Date();
   }
   int d = stoi(match[1]);
@@ -30,7 +30,7 @@ Date Date::fromString(const string &str, string &errorMsg)
   Date date(d, m, y);
   if (!date.isValid())
   {
-    errorMsg = "Ngay khong hop le";
+    errorMsg = "Ngay khong hop le.";
     return Date();
   }
   errorMsg = "";
@@ -95,17 +95,17 @@ bool isValidIdNumber(const string &id, const set<string> &usedIds, string &error
     return true;
   if (id.length() != 9 && id.length() != 12)
   {
-    errorMsg = "ID phai co 9 hoac 12 chu so";
+    errorMsg = "ID phai co 9 hoac 12 chu so.";
     return false;
   }
   if (!regex_match(id, regex("\\d+")))
   {
-    errorMsg = "ID chi duoc chua chu so";
+    errorMsg = "ID chi duoc chua chu so.";
     return false;
   }
   if (usedIds.count(id))
   {
-    errorMsg = "ID da duoc su dung";
+    errorMsg = "ID da duoc su dung.";
     return false;
   }
   errorMsg = "";
@@ -148,7 +148,7 @@ optional<int> getValidIntegerInput(const string &prompt, int min, int max)
       size_t pos;
       int value = stoi(input, &pos);
       if (pos != input.length())
-        throw invalid_argument("Khong phai so nguyen");
+        throw invalid_argument("Khong phai so nguyen.");
       if (value < min || value > max)
       {
         cout << "Loi: Gia tri phai tu " << min << " den " << max << "!\n";

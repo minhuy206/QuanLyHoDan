@@ -30,6 +30,7 @@ public:
   const HouseholdHead *getHead(const std::string &id) const;
   const FamilyMember *getMember(const std::string &id) const;
   void addMember();
+  void addMemberWithOutId(std::string id, std::string headId);
   void editMember();
   void deleteMember();
 };
